@@ -1,75 +1,94 @@
 <?php
 
-class Route {
-    
-    private $url;
-    private $verb;
-    private $controller;
-    private $method;
-    private $params;
+    require_once "./Controller/loginController.php";    
+    require_once "./Controller/vuelingController.php";
+    require_once "./Controller/destinationController.php";
+   
+    define('BASE_URL', '//'.$_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . dirname($_SERVER['PHP_SELF']).'/');
 
-    public function __construct($url, $verb, $controller, $method){
-        $this->url = $url;
-        $this->verb = $verb;
-        $this->controller = $controller;
-        $this->method = $method;
-        $this->params = [];
-    }
-    public function match($url, $verb) {
-        if($this->verb != $verb){
-            return false;
-        }
-        $partsURL = explode("/", trim($url,'/'));
-        $partsRoute = explode("/", trim($this->url,'/'));
-        if(count($partsRoute) != count($partsURL)){
-            return false;
-        }
-        foreach ($partsRoute as $key => $part) {
-            if($part[0] != ":"){
-                if($part != $partsURL[$key])
-                return false;
-            } //es un parametro
-            else
-            $this->params[$part] = $partsURL[$key];
-        }
-        return true;
-    }
-    public function run(){
-        $controller = $this->controller;  
-        $method = $this->method;
-        $params = $this->params;
-        (new $controller())->$method($params);
-    }
-}
+    $action = 'home'; 
 
-class Router {
-    private $routeTable = [];
-    private $defaultRoute;
-
-    public function __construct() {
-        $this->defaultRoute = null;
+    if (!empty($_GET['action'])) { 
+        $action = $_GET['action'];
     }
 
-    public function route($url, $verb) {
-        //$ruta->url //no compila!
-        foreach ($this->routeTable as $route) {
-            if($route->match($url, $verb)){
-                //TODO: ejecutar el controller//ejecutar el controller
-                // pasarle los parametros
-                $route->run();
-                return;
-            }
-        }
-        //Si ninguna ruta coincide con el pedido y se configuró ruta por defecto.
-        if ($this->defaultRoute != null)
-            $this->defaultRoute->run();
-    }
-    
-    public function addRoute ($url, $verb, $controller, $method) {
-        $this->routeTable[] = new Route($url, $verb, $controller, $method);
-    }
+    $params = explode('/', $action);
 
-    public function setDefaultRoute($controller, $method) {
-        $this->defaultRoute = new Route("", "", $controller, $method);
+    switch ($params[0]) {
+        case 'home':
+            $vuelingController = new VuelingController();
+            $vuelingController->showHome();
+            break;
+        case 'formulariovuelo':
+            $vuelingController = new VuelingController();
+            $vuelingController->showFormVuelo();
+            break;
+        case 'login':
+            $loginController = new LoginController();
+            $loginController->Showformlogin();
+            break;
+        case 'validacion':
+            $loginController = new loginController();
+            $loginController->controlingreso();
+            break;
+        case 'logout':
+            $loginController = new loginController();
+            $loginController->logout();
+            break;
+        case 'verdetalle':
+            $vuelingController= new VuelingController();
+            $vuelingController->verDetalle($params[1]);
+            break;
+        case 'insertvuelo':
+            $vuelingController = new VuelingController();
+            $vuelingController->ingresarVuelo();
+            break;
+        case 'eliminarvuelo':
+            $vuelingController = new VuelingController();         
+            $vuelingController->eliminarVuelo($params[1]);
+            break;
+        case 'editarvuelo':
+            $vuelingController = new VuelingController();
+            $vuelingController->consultarVuelo($params[1]);
+            break;
+        case 'guardarcambiosvuelo':
+            $vuelingController = new VuelingController();
+            $vuelingController->guardarEdicionVuelo($params[1]);
+            break; 
+        case 'verdestinos':
+            $destinationController= new DestinationController();
+            $destinationController->verDestinos();
+            break;
+        case 'formulariodestino':;
+            $destinationController = new DestinationController();
+            $destinationController->showFormDestino();
+            break;
+        case 'ingresardestino':
+            $destinationController = new DestinationController();
+            $destinationController->ingresarDestino();
+            break;
+        case 'vervuelospordestino':
+            $vuelingController= new VuelingController();        
+            $vuelingController->vuelosPorDestino($params[1]);
+            break;
+        case 'eliminardestino': 
+            $destinationController = new DestinationController();
+            $destinationController->consultaEliminarDestino($params[1]);
+            break;
+        case 'confirmaeliminardestino': 
+            $destinationController = new DestinationController();
+            $destinationController->eliminarDestino($params[1]);
+            break;               
+        case 'editardestino':
+            $destinationController = new DestinationController();
+            $destinationController->consultarDestino($params[1]);
+            break;         
+        case 'guardarcambiosdestino':
+            $destinationController = new DestinationController();       
+            $destinationController->guardarEdicionDestino($params[1]);
+            break;
+        default:
+            echo('404 Page not found');
+            break;
     }
-}
+        
